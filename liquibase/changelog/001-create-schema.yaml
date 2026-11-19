@@ -1,0 +1,207 @@
+databaseChangeLog:
+  # ---------------------------------------------------------------- users (auth-service)
+  - changeSet:
+      id: 001-create-users
+      author: maintenance-team
+      changes:
+        - createTable:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_users
+                    nullable: false
+              - column:
+                  name: email
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+                    uniqueConstraintName: uq_users_email
+              - column:
+                  name: password_hash
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: role
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+        - sql:
+            sql: ALTER TABLE users ADD CONSTRAINT ck_users_role CHECK (role IN ('ADMIN', 'TENANT'))
+
+  # ---------------------------------------------------------------- scari (tenant-service)
+  - changeSet:
+      id: 001-create-scari
+      author: maintenance-team
+      changes:
+        - createTable:
+            tableName: scari
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_scari
+                    nullable: false
+              - column:
+                  name: denumire
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+
+  # ---------------------------------------------------------------- apartments (tenant-service)
+  - changeSet:
+      id: 001-create-apartments
+      author: maintenance-team
+      changes:
+        - createTable:
+            tableName: apartments
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_apartments
+                    nullable: false
+              - column:
+                  name: scara_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_apartments_scara
+                    references: scari(id)
+              - column:
+                  name: numar_apartament
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: suprafata_utila
+                  type: DOUBLE PRECISION
+                  constraints:
+                    nullable: false
+              - column:
+                  name: numar_persoane
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: UUID
+                  constraints:
+                    nullable: true
+                    foreignKeyName: fk_apartments_user
+                    references: users(id)
+
+  # ---------------------------------------------------------------- index_logs (utility-service)
+  - changeSet:
+      id: 001-create-index-logs
+      author: maintenance-team
+      changes:
+        - createTable:
+            tableName: index_logs
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_index_logs
+                    nullable: false
+              - column:
+                  name: apartment_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_index_logs_apartment
+                    references: apartments(id)
+              - column:
+                  name: index_apa_rece
+                  type: DOUBLE PRECISION
+                  constraints:
+                    nullable: false
+              - column:
+                  name: index_apa_calda
+                  type: DOUBLE PRECISION
+                  constraints:
+                    nullable: false
+              - column:
+                  name: data_transmisiei
+                  type: DATE
+                  constraints:
+                    nullable: false
+
+  # ---------------------------------------------------------------- bills (utility-service)
+  - changeSet:
+      id: 001-create-bills
+      author: maintenance-team
+      changes:
+        - createTable:
+            tableName: bills
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_bills
+                    nullable: false
+              - column:
+                  name: apartment_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_bills_apartment
+                    references: apartments(id)
+              - column:
+                  name: valoare_totala
+                  type: DOUBLE PRECISION
+                  constraints:
+                    nullable: false
+              - column:
+                  name: luna_facturare
+                  type: DATE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status_trimisa
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 001-create-indexes
+      author: maintenance-team
+      changes:
+        - createIndex:
+            tableName: apartments
+            indexName: idx_apartments_scara_id
+            columns:
+              - column:
+                  name: scara_id
+        - createIndex:
+            tableName: apartments
+            indexName: idx_apartments_user_id
+            columns:
+              - column:
+                  name: user_id
+        - createIndex:
+            tableName: index_logs
+            indexName: idx_index_logs_apartment_id
+            columns:
+              - column:
+                  name: apartment_id
+        - createIndex:
+            tableName: bills
+            indexName: idx_bills_apartment_id
+            columns:
+              - column:
+                  name: apartment_id
