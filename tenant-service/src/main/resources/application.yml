@@ -1,0 +1,21 @@
+server:
+  port: ${SERVER_PORT:8082}
+
+spring:
+  application:
+    name: tenant-service
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/maintenance_db}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+  jpa:
+    hibernate:
+      ddl-auto: none # schema is owned by Liquibase
+    open-in-view: false
+
+management:
+  endpoints:
+    web:
+      base-path: /api/tenants
+      exposure:
+        include: health
